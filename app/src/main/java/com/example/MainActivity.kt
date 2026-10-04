@@ -77,9 +77,55 @@ class MainActivity : AppCompatActivity(), UnityAdsManager.AdStateListener {
         updateRewardUI()
         updateInterstitialButtonState()
         updateRewardedButtonState()
+
+        val currentTestMode = AdsConfig.isTestModeEnabled(this)
+        binding.switchTestMode.isChecked = currentTestMode
+        updateTestModeUI(currentTestMode)
+    }
+
+    private fun updateTestModeUI(isTestMode: Boolean) {
+        if (isTestMode) {
+            binding.tvAdModeTitle.text = "Test Ads Mode (Active)"
+            binding.tvAdModeDescription.text = "Guarantees 100% ad fill rate for APK testing on real phone"
+            binding.tvTestModeBadge.text = "TEST ADS (100% FILL)"
+            binding.tvTestModeBadge.setTextColor(getColor(R.color.status_ready))
+        } else {
+            binding.tvAdModeTitle.text = "Live Real Ads Mode (Active)"
+            binding.tvAdModeDescription.text = "Live traffic from Game ID 5846818 (requires Unity approval/fill)"
+            binding.tvTestModeBadge.text = "LIVE ADS MODE"
+            binding.tvTestModeBadge.setTextColor(getColor(R.color.primary))
+        }
     }
 
     private fun setupListeners() {
+        // Mode Switch (Test vs Live Ads)
+        binding.switchTestMode.setOnCheckedChangeListener { _, isChecked ->
+            updateTestModeUI(isChecked)
+            appendLog("Switched Ad Mode -> TestMode = $isChecked")
+            UnityAdsManager.reinitialize(
+                activity = this,
+                enableTestMode = isChecked,
+                topHolder = binding.topBannerAdHolder,
+                topStatus = binding.tvTopBannerStatus,
+                bottomHolder = binding.bottomBannerAdHolder,
+                bottomStatus = binding.tvBottomBannerStatus
+            )
+        }
+
+        // Quick Reload All Ads Button
+        binding.btnQuickReloadAll.setOnClickListener {
+            appendLog("Reloading all ads (Interstitial, Rewarded, Banners)...")
+            val isTest = binding.switchTestMode.isChecked
+            UnityAdsManager.reinitialize(
+                activity = this,
+                enableTestMode = isTest,
+                topHolder = binding.topBannerAdHolder,
+                topStatus = binding.tvTopBannerStatus,
+                bottomHolder = binding.bottomBannerAdHolder,
+                bottomStatus = binding.tvBottomBannerStatus
+            )
+        }
+
         // 1. Interstitial Ad Button (Unchanged)
         binding.btnShowInterstitial.setOnClickListener {
             handleInterstitialButtonClick()

@@ -110,25 +110,26 @@ object UnityAdsManager {
      * Should be called when the application starts.
      */
     fun initialize(context: Context) {
+        val testMode = AdsConfig.isTestModeEnabled(context)
         if (isInitialized) {
-            notifyLog("Unity Ads is already initialized (SDK v${AdsConfig.SDK_VERSION})")
+            notifyLog("Unity Ads is already initialized (SDK v${AdsConfig.SDK_VERSION}, TestMode: $testMode)")
             return
         }
 
         notifyLog("Configuring privacy & consent metadata...")
         applyPrivacyConsent(context)
 
-        notifyLog("Initializing Unity Ads SDK with Game ID: ${AdsConfig.UNITY_GAME_ID} (TestMode: ${AdsConfig.TEST_MODE})...")
+        notifyLog("Initializing Unity Ads SDK with Game ID: ${AdsConfig.UNITY_GAME_ID} (TestMode: $testMode)...")
 
         UnityAds.initialize(
             context.applicationContext,
             AdsConfig.UNITY_GAME_ID,
-            AdsConfig.TEST_MODE,
+            testMode,
             object : IUnityAdsInitializationListener {
                 override fun onInitializationComplete() {
                     isInitialized = true
                     val version = AdsConfig.SDK_VERSION
-                    notifyLog("Unity Ads initialized successfully (SDK v$version)")
+                    notifyLog("Unity Ads initialized successfully (SDK v$version, TestMode: $testMode)")
 
                     postToMain {
                         listeners.forEach { it.onInitSuccess(version) }
@@ -160,6 +161,74 @@ object UnityAdsManager {
                     Log.e(TAG, errorMsg)
                     notifyLog(errorMsg)
 
+                    postToMain {
+                        listeners.forEach { it.onInitFailed(errorMsg) }
+                    }
+                }
+            }
+        )
+    }
+
+    /**
+     * Re-initializes Unity Ads with a specific test mode toggle.
+     * Destroys existing banners and reloads all ad formats.
+     */
+    fun reinitialize(
+        activity: Activity,
+        enableTestMode: Boolean,
+        topHolder: ViewGroup,
+        topStatus: TextView?,
+        bottomHolder: ViewGroup,
+        bottomStatus: TextView?
+    ) {
+        notifyLog("Re-initializing Unity Ads (TestMode: $enableTestMode)...")
+        AdsConfig.setTestModeEnabled(activity, enableTestMode)
+
+        destroyBanners()
+        isInitialized = false
+        isInterstitialReady = false
+        isInterstitialLoading = false
+        isRewardedReady = false
+        isRewardedLoading = false
+        isTopBannerReady = false
+        isTopBannerLoading = false
+        isBottomBannerReady = false
+        isBottomBannerLoading = false
+
+        pendingActivity = activity
+        pendingTopHolder = topHolder
+        pendingTopStatus = topStatus
+        pendingBottomHolder = bottomHolder
+        pendingBottomStatus = bottomStatus
+
+        applyPrivacyConsent(activity)
+
+        UnityAds.initialize(
+            activity.applicationContext,
+            AdsConfig.UNITY_GAME_ID,
+            enableTestMode,
+            object : IUnityAdsInitializationListener {
+                override fun onInitializationComplete() {
+                    isInitialized = true
+                    val version = AdsConfig.SDK_VERSION
+                    notifyLog("Unity Ads re-initialized successfully (TestMode: $enableTestMode)")
+
+                    postToMain {
+                        listeners.forEach { it.onInitSuccess(version) }
+                        loadInterstitial()
+                        loadRewarded()
+                        loadAllBanners(activity, topHolder, topStatus, bottomHolder, bottomStatus)
+                    }
+                }
+
+                override fun onInitializationFailed(
+                    error: UnityAds.UnityAdsInitializationError,
+                    message: String
+                ) {
+                    isInitialized = false
+                    val errorMsg = "Unity Ads re-init failed [$error]: $message"
+                    Log.e(TAG, errorMsg)
+                    notifyLog(errorMsg)
                     postToMain {
                         listeners.forEach { it.onInitFailed(errorMsg) }
                     }

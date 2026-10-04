@@ -33,6 +33,21 @@ object AdsConfig {
     const val TEST_MODE: Boolean = false
 
     /**
+     * Active test mode preference stored in SharedPreferences.
+     * Defaults to true so that sideloaded APKs and direct installs can show real working
+     * Unity Ads immediately without requiring Google Play Store live approval.
+     */
+    fun isTestModeEnabled(context: android.content.Context): Boolean {
+        val prefs = context.getSharedPreferences("app_user_prefs", android.content.Context.MODE_PRIVATE)
+        return prefs.getBoolean("pref_unity_test_mode", true)
+    }
+
+    fun setTestModeEnabled(context: android.content.Context, enabled: Boolean) {
+        val prefs = context.getSharedPreferences("app_user_prefs", android.content.Context.MODE_PRIVATE)
+        prefs.edit().putBoolean("pref_unity_test_mode", enabled).commit()
+    }
+
+    /**
      * Privacy & Consent configuration flags.
      * Compatible with official Unity Ads privacy requirements.
      */
