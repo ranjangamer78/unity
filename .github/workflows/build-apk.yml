@@ -23,21 +23,34 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Decode Debug Keystore
+      - name: Restore or Generate Debug Keystore
         run: |
           if [ -f "debug.keystore.base64" ]; then
             base64 -d debug.keystore.base64 > debug.keystore
-            echo "Debug keystore restored successfully."
+            echo "Restored debug.keystore from base64."
+          elif [ ! -f "debug.keystore" ]; then
+            echo "Generating standard debug keystore..."
+            keytool -genkey -v -keystore debug.keystore \
+              -alias androiddebugkey \
+              -keyalg RSA \
+              -keysize 2048 \
+              -validity 10000 \
+              -storepass android \
+              -keypass android \
+              -dname "CN=Android Debug,O=Android,C=US"
           fi
 
-      - name: Create Environment Secrets File
+      - name: Create Secrets Environment File
         run: |
           touch .env
-          echo "Environment file created."
+          echo "Created .env configuration."
 
-      - name: Accept Android SDK Licenses
+      - name: Set Android SDK Permissions & Accept Licenses
         run: |
+          # Grant runner ownership so SDK manager and Gradle can write components
+          sudo chown -R $USER:$USER $ANDROID_HOME
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --install "platforms;android-36" || true
 
       - name: Grant Execute Permission to Gradlew
         run: chmod +x gradlew
