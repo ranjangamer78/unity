@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Unity Ads Demo</string>
+    <string name="app_title">UNITY ADS DEMO</string>
+    <string name="app_subtitle">Real Native Android Ad Integration</string>
+
+    <string name="btn_show_interstitial">SHOW INTERSTITIAL AD</string>
+    <string name="btn_watch_rewarded">WATCH REWARDED AD</string>
+    <string name="btn_restart_app">RESTART APP (RESET ALL DATA)</string>
+    <string name="btn_loading_ad">Loading Ad...</string>
+
+    <string name="restart_dialog_title">Reset App &amp; Fresh Launch?</string>
+    <string name="restart_dialog_message">This will completely wipe all local storage (SharedPreferences, cache, temporary files) and relaunch the app in a 100% clean, first-install state.</string>
+    <string name="btn_cancel">CANCEL</string>
+    <string name="btn_restart">RESET &amp; RELAUNCH</string>
+
+    <string name="ad_not_ready_interstitial">Interstitial ad is not available. Please try again.</string>
+    <string name="ad_not_ready_rewarded">Rewarded ad is not available. Please try again.</string>
+
+    <string name="top_banner_waiting">Waiting for Top Banner...</string>
+    <string name="bottom_banner_waiting">Waiting for Bottom Banner...</string>
+    <string name="coins_label">Rewards Earned: %1$d Coins</string>
+    <string name="sdk_status_label">SDK Status: %1$s</string>
+    <string name="game_id_label">Unity Game ID: %1$s</string>
+</resources>

@@ -1,0 +1,6 @@
+{
+  "name": "Unity Ads Demo",
+  "description": "Native Android app with real Unity Ads integration for Interstitial, Rewarded, and dual Top/Bottom Banner ads.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
